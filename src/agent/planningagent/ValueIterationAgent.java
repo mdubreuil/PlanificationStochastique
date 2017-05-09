@@ -67,6 +67,7 @@ public class ValueIterationAgent extends PlanningValueAgent{
         //delta < epsilon ; cette verification est realise dans la classe mere
         //il faut ici mettre a jour delta
         this.delta=0.0;
+        double convergence = 0.0;
         
         for(Map.Entry<Etat, Double> etat : this.getV().entrySet()){
             if(this.mdp.estAbsorbant(etat.getKey())){
@@ -77,18 +78,22 @@ public class ValueIterationAgent extends PlanningValueAgent{
             double transitionValue;
             for (Action a : actionsPossibles) {
                 transitionValue = getSommeRecompense(etat.getKey(),a);
-                max = transitionValue>max?transitionValue:max;
-                vMax = transitionValue>vMax?transitionValue:vMax;
-                vMin = transitionValue<vMin?transitionValue:vMin;
-            }            
+                max = transitionValue > max ? transitionValue : max;
+                vMax = transitionValue > vMax ? transitionValue : vMax;
+                vMin = transitionValue < vMin ? transitionValue : vMin;
+            }
+
+			// Convergence
+            double value = Math.abs(etat.getValue() - max);
+            convergence = value > convergence ? value : convergence;
             etat.setValue(max);
         }
         
         // mise a jour vmax et vmin pour affichage du gradient de couleur:
         //vmax est la valeur de max pour tout s de V
         //vmin est la valeur de min pour tout s de V
-        this.vmax = vMax; this.vmin = vMin;
-        
+        this.vmax = vMax; this.vmin = vMin; this.delta = convergence;
+
         //******************* laisser notification a la fin de la methode	
         this.notifyObs();
     }
