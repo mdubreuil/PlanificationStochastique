@@ -2,7 +2,6 @@ package agent.strategy;
 
 import java.util.List;
 import java.util.Random;
-
 import agent.rlagent.RLAgent;
 import environnement.Action;
 import environnement.Etat;
@@ -36,15 +35,20 @@ public class StrategyGreedy extends StrategyExploration{
             return null;
         }
                 
-        if (d < epsilon) {
+        if (d <= epsilon) {
+            // On effectue une action d'exploration aléatoire
             actions = this.agent.getActionsLegales(_e);
         } else {
+            // Probabilité supérieur à epsilon ( 1- epsilon)
+            // On récupère la meilleure action
             actions = this.agent.getPolitique(_e);
 
             if(actions == null || actions.isEmpty()){
+                // S'il n'existe pas de meilleure action, on explore aléatoirement
                 actions = this.agent.getActionsLegales(_e);
             }
         }
+        // Parmi les actions récupérées, on en prend une au hasard
         return actions.get(rand.nextInt(actions.size()));
     }
 
@@ -56,11 +60,4 @@ public class StrategyGreedy extends StrategyExploration{
         this.epsilon = epsilon;
         System.out.println("epsilon:"+epsilon);
     }
-
-/*	@Override
-	public void setAction(Action _a) {
-		// TODO Auto-generated method stub
-		
-	}*/
-
 }

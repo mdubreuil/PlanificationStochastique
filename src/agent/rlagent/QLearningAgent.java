@@ -4,6 +4,8 @@ import environnement.Action;
 import environnement.Environnement;
 import environnement.Etat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +17,7 @@ import java.util.Map;
  * @author Ophélie EOUZAN 4APP
  *
  */
+
 public class QLearningAgent extends RLAgent {
     /**
      *  format de memorisation des Q valeurs: utiliser partout setQValeur car cette methode notifie la vue
@@ -53,17 +56,12 @@ public class QLearningAgent extends RLAgent {
         if(this.qvaleurs.containsKey(e)){
             
             HashMap<Action, Double> actionsPossibles = qvaleurs.get(e);
-            double max = getMaxQValeur(e);//-Double.MAX_VALUE;
+            double max = getValeur(e);
             
             if(!actionsPossibles.isEmpty()){               
                 for (Map.Entry<Action, Double> action : actionsPossibles.entrySet()) {
-                    double value = action.getValue();//this.getQValeur(e, action.getKey());
-                    if(max < value){
-                        //returnactions.clear();
-                        returnactions.add(action.getKey());
-                        //max = value;
-                    }
-                    if(max == value){
+                    double value = action.getValue();
+                    if(value >= max){
                         returnactions.add(action.getKey());
                     }
                 } 
@@ -75,6 +73,9 @@ public class QLearningAgent extends RLAgent {
 	
     @Override
     public double getValeur(Etat e) {
+        if(!this.qvaleurs.containsKey(e)){
+            return 0.0;
+        }
         return getMaxQValeur(e);
     }
 
@@ -90,46 +91,39 @@ public class QLearningAgent extends RLAgent {
     }
 	
     public double getMaxQValeur(Etat e) {
-        double max = 0.0, value;
+        double max = 0.0;
         if(this.qvaleurs.containsKey(e)){
             HashMap<Action,Double> actionsPossibles = this.qvaleurs.get(e);
             if(actionsPossibles.isEmpty()){
                 max = 0.0;
             } else {
-                for (Map.Entry<Action, Double> action : actionsPossibles.entrySet()) {
-                    if(action.getValue() >= max){
-                        value = action.getValue();
-                        max = value; //> max ? value : max;
-                    }
-                } 
+                Collection c = actionsPossibles.values();
+                max = (double) Collections.max(c);
             }
         } else {
-            return 0.0;
+            return max = 0.0;
         }
         return max;
     }
 
     @Override
     public void setQValeur(Etat e, Action a, double d) {
-        double vMax = -Double.MAX_VALUE, vMin = Double.MAX_VALUE;
         if(this.qvaleurs.containsKey(e)){
             HashMap<Action,Double> actions = this.qvaleurs.get(e);
             if (actions.containsKey(a)) {
+                // L'état et l'action existent déjà, on doit la remplacer avec la nouvelle valeur
                 actions.replace(a, d);
             } else {
+                // Rajout de l'action
                 actions.put(a, 0.0);
             }
         } else {
+            // On créer une nouvelle action 
             HashMap<Action,Double> action = new HashMap<>();
             action.put(a, 0.0);
+            // Puis on crée un nouvel état
             qvaleurs.put(e, action);
-        }
-        // TODO mise a jour vmax et vmin pour affichage du gradient de couleur:
-        // vmax est la valeur de max pour tout s de V
-        // vmin est la valeur de min pour tout s de V
-//            vMax = d > vMax ? d : vMax;
-//            vMin = d < vMin ? d : vMin;
-//            this.vmax = vMax; this.vmin = vMin;
+        }        
         this.notifyObs();
     }
 	
@@ -159,7 +153,7 @@ public class QLearningAgent extends RLAgent {
     @Override
     public void reset() {
         super.reset();
-        //this.qvaleurs.clear();
+        this.qvaleurs.clear();
         this.episodeNb =0;
         this.notifyObs();
     }
