@@ -49,16 +49,19 @@ public class QLearningAgent extends RLAgent {
             System.out.println("aucune action legale");
             return new ArrayList<>();
         }
+        
         if(this.qvaleurs.containsKey(e)){
+            
             HashMap<Action, Double> actionsPossibles = qvaleurs.get(e);
-            double max = -Double.MAX_VALUE;
+            double max = getMaxQValeur(e);//-Double.MAX_VALUE;
+            
             if(!actionsPossibles.isEmpty()){               
                 for (Map.Entry<Action, Double> action : actionsPossibles.entrySet()) {
-                    double value = this.getQValeur(e, action.getKey());
+                    double value = action.getValue();//this.getQValeur(e, action.getKey());
                     if(max < value){
-                        returnactions.clear();
+                        //returnactions.clear();
                         returnactions.add(action.getKey());
-                        max = value;
+                        //max = value;
                     }
                     if(max == value){
                         returnactions.add(action.getKey());
@@ -87,16 +90,16 @@ public class QLearningAgent extends RLAgent {
     }
 	
     public double getMaxQValeur(Etat e) {
-        double max = -Double.MAX_VALUE, value;
+        double max = 0.0, value;
         if(this.qvaleurs.containsKey(e)){
             HashMap<Action,Double> actionsPossibles = this.qvaleurs.get(e);
             if(actionsPossibles.isEmpty()){
                 max = 0.0;
             } else {
                 for (Map.Entry<Action, Double> action : actionsPossibles.entrySet()) {
-                    if(action.getValue() > max){
+                    if(action.getValue() >= max){
                         value = action.getValue();
-                        max = value > max ? value : max;
+                        max = value; //> max ? value : max;
                     }
                 } 
             }
@@ -112,11 +115,13 @@ public class QLearningAgent extends RLAgent {
         if(this.qvaleurs.containsKey(e)){
             HashMap<Action,Double> actions = this.qvaleurs.get(e);
             if (actions.containsKey(a)) {
-                actions.put(a, d);
+                actions.replace(a, d);
+            } else {
+                actions.put(a, 0.0);
             }
         } else {
             HashMap<Action,Double> action = new HashMap<>();
-            action.put(a, d);
+            action.put(a, 0.0);
             qvaleurs.put(e, action);
         }
         // TODO mise a jour vmax et vmin pour affichage du gradient de couleur:
@@ -154,7 +159,7 @@ public class QLearningAgent extends RLAgent {
     @Override
     public void reset() {
         super.reset();
-        this.qvaleurs.clear();
+        //this.qvaleurs.clear();
         this.episodeNb =0;
         this.notifyObs();
     }
